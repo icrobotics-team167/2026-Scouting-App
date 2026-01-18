@@ -9,6 +9,14 @@ import com.example.a2026scoutingapp.ui.saved.SavedMatchesScreen
 import com.example.a2026scoutingapp.ui.start.Alliance
 import com.example.a2026scoutingapp.ui.start.StartPayload
 import com.example.a2026scoutingapp.ui.start.StartScreen
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import com.example.a2026scoutingapp.data.ExportUtils
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private enum class Page { START, MATCH, SAVED }
 
@@ -20,6 +28,14 @@ fun AppRoot() {
     var startPayload by remember { mutableStateOf<StartPayload?>(null) }
 
     val context = LocalContext.current
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri: Uri? ->
+        if (uri != null) {
+            ExportUtils.exportAllAsZip(context, uri)
+        }
+    }
     var savedFiles by remember { mutableStateOf(MatchStorage.list(context)) }
 
     fun refreshSaved() {
@@ -70,7 +86,15 @@ fun AppRoot() {
         Page.SAVED -> SavedMatchesScreen(
             files = savedFiles,
             onRefresh = { refreshSaved() },
-            onBack = { page = Page.START }
+            onBack = { page = Page.START },
+            onExport = {
+                val timestamp = SimpleDateFormat(
+                    "yyyy-MM-dd_HHmm",
+                    Locale.US
+                ).format(Date())
+
+                exportLauncher.launch("scouting_export_$timestamp.zip")
+            }
         )
     }
 }

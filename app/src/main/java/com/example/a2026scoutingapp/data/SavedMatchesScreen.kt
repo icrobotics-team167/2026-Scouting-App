@@ -19,8 +19,10 @@ private enum class SavedPage { LIST, DETAIL }
 fun SavedMatchesScreen(
     files: List<File>,
     onRefresh: () -> Unit,
-    onBack: () -> Unit
-) {
+    onBack: () -> Unit,
+    onExport: () -> Unit
+)
+ {
     var page by remember { mutableStateOf(SavedPage.LIST) }
     var selected by remember { mutableStateOf<File?>(null) }
     var jsonText by remember { mutableStateOf("") }
@@ -51,6 +53,10 @@ fun SavedMatchesScreen(
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.weight(1f)
                 )
+
+                TextButton(onClick = onExport) {
+                    Text("Export")
+                }
 
                 TextButton(onClick = onRefresh) { Text("Refresh") }
 
