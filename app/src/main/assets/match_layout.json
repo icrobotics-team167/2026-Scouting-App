@@ -1,0 +1,121 @@
+{
+  "screenId": "match",
+  "title": "Match Page",
+  "categories": [
+    {
+      "id": "autonomous",
+      "title": "Autonomous",
+      "rows": [
+        {
+          "widgets": [
+            {
+              "type": "checkbox",
+              "id": "auto_leftStartingZone",
+              "label": "Left Starting Zone",
+              "hint": "Did the robot leave the starting zone in auto?",
+              "default": false
+            },
+            {
+              "type": "counter",
+              "id": "auto_cycles",
+              "label": "Cycles",
+              "min": 0,
+              "max": 999,
+              "default": 0
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "type": "checkbox",
+              "id": "auto_climbed",
+              "label": "Climbed",
+              "hint": "Any climb achieved during auto?",
+              "default": false
+            },
+            {
+              "type": "checkbox",
+              "id": "auto_gatheredPieces",
+              "label": "Gathered pieces",
+              "hint": "Picked up game pieces during auto?",
+              "default": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "teleop",
+      "title": "Teleop",
+      "rows": [
+        {
+          "widgets": [
+            {
+              "type": "counter",
+              "id": "tele_cycles",
+              "label": "Cycles",
+              "min": 0,
+              "max": 999,
+              "default": 0
+            },
+            {
+              "type": "dropdown",
+              "id": "tele_climbed",
+              "label": "Climbed",
+              "hint": "Choose the highest level achieved.",
+              "options": ["None", "L1", "L2", "L3"],
+              "default": "None"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "additional",
+      "title": "Additional Notes",
+      "rows": [
+        {
+          "widgets": [
+            {
+              "type": "checkbox",
+              "id": "notes_damagedOrDisabled",
+              "label": "Robot damaged and/or disabled",
+              "hint": "Did it break, tip, stop moving, or become unusable?",
+              "default": false
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "type": "checkbox",
+              "id": "notes_groundPickup",
+              "label": "Ground pickup",
+              "default": false
+            },
+            {
+              "type": "checkbox",
+              "id": "notes_outpostPickup",
+              "label": "Outpost pickup",
+              "default": false
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "type": "text",
+              "id": "notes_extraComments",
+              "label": "Extra comments",
+              "hint": "Anything notable (speed, reliability, defense, etc.)",
+              "multiline": true,
+              "minLines": 3,
+              "default": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
