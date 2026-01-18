@@ -14,6 +14,8 @@ private enum class Page { START, MATCH, SAVED }
 
 @Composable
 fun AppRoot() {
+    var lastAlliance by remember { mutableStateOf(com.example.a2026scoutingapp.ui.start.Alliance.RED) }
+    var lastPosition by remember { mutableStateOf(1) }
     var page by remember { mutableStateOf(Page.START) }
     var startPayload by remember { mutableStateOf<StartPayload?>(null) }
 
@@ -26,6 +28,10 @@ fun AppRoot() {
 
     when (page) {
         Page.START -> StartScreen(
+            initialAlliance = lastAlliance,
+            initialPosition = lastPosition,
+            onAllianceChange = { lastAlliance = it },
+            onPositionChange = { lastPosition = it },
             onStart = {
                 startPayload = it
                 page = Page.MATCH

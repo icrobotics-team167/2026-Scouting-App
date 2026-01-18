@@ -82,10 +82,22 @@ fun toPayloadOrNull(state: StartFormState, errors: StartFormErrors): StartPayloa
 @Composable
 fun StartScreen(
     modifier: Modifier = Modifier,
+    initialAlliance: Alliance,
+    initialPosition: Int,
+    onAllianceChange: (Alliance) -> Unit,
+    onPositionChange: (Int) -> Unit,
     onStart: (StartPayload) -> Unit,
     onViewSaved: () -> Unit
 ) {
-    var state by remember { mutableStateOf(StartFormState()) }
+
+    var state by remember {
+        mutableStateOf(
+            StartFormState(
+                alliance = initialAlliance,
+                position = initialPosition
+            )
+        )
+    }
     val errors = remember(state) { validate(state) }
     val canStart = !errors.hasAny
 
@@ -112,12 +124,17 @@ fun StartScreen(
 
                         AlliancePicker(
                             value = state.alliance,
-                            onChange = { state = state.copy(alliance = it) }
+                            onChange = {
+                                state = state.copy(alliance = it)
+                                onAllianceChange(it)
+                            }
                         )
-
                         PositionPicker(
                             value = state.position,
-                            onChange = { state = state.copy(position = it) }
+                            onChange = {
+                                state = state.copy(position = it)
+                                onPositionChange(it)
+                            }
                         )
                     }
                 }
