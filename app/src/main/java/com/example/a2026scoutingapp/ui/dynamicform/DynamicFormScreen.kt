@@ -115,57 +115,61 @@ private fun MatchHeaderBar(
         Color(0xFFDC2626) else Color(0xFF2563EB)
 
     Surface(color = bg) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "←",
+        Column() {
+            Spacer(modifier = Modifier.height(15.dp))
+            Row(
                 modifier = Modifier
-                    .clickable { onBack() }
-                    .padding(8.dp),
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            Column(Modifier.weight(1f)) {
-
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        scoutName,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.White
-                    )
-                    Text(
-                        "${matchType.replaceFirstChar { it.uppercase() }} $matchNumber",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.White
-                    )
-                }
-
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    "${alliance.name.lowercase().replaceFirstChar { it.uppercase() }} $position",
-                    style = MaterialTheme.typography.headlineSmall,
+                    text = "←",
+                    modifier = Modifier
+                        .clickable { onBack() }
+                        .padding(8.dp),
+                    style = MaterialTheme.typography.titleLarge,
                     color = Color.White
                 )
 
-                Text(
-                    "Team $teamNumber",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.9f)
-                )
+                Spacer(Modifier.width(8.dp))
+
+                Column(Modifier.weight(1f)) {
+
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            scoutName,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.White
+                        )
+                        Text(
+                            "${matchType.replaceFirstChar { it.uppercase() }} $matchNumber",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color.White
+                        )
+                    }
+
+                    Text(
+                        "${
+                            alliance.name.lowercase().replaceFirstChar { it.uppercase() }
+                        } $position",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White
+                    )
+
+                    Text(
+                        "Team $teamNumber",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
             }
         }
     }
 }
-
 
 @Composable
 private fun CategoryCard(
@@ -364,19 +368,44 @@ private fun DropdownWidget(w: JSONObject, values: SnapshotStateMap<String, Any>)
 }
 
 @Composable
-private fun SliderWidget(w: JSONObject, values: SnapshotStateMap<String, Any>) {
+private fun SliderWidget(
+    w: JSONObject,
+    values: SnapshotStateMap<String, Any>
+) {
     val id = w.getString("id")
     val label = w.getString("label")
-    val min = w.optDouble("sliderMin", 0.0).toFloat()
-    val max = w.optDouble("sliderMax", 10.0).toFloat()
+
+    val min = w.optDouble("min", 0.0).toFloat()
+    val max = w.optDouble("max", 100.0).toFloat()
+    val step = w.optInt("step", 1)
+
+    val hint = w.optString("hint", "")
+
     val v = values.float(id).coerceIn(min, max)
 
     Column {
-        Text("$label: ${v.roundToInt()}")
+        Text(
+            text = "$label: ${v.roundToInt()}",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        if (hint.isNotBlank()) {
+            Text(
+                text = hint,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
         Slider(
             value = v,
-            onValueChange = { values.setFloat(id, it) },
-            valueRange = min..max
+            onValueChange = {
+                val snapped =
+                    ((it - min) / step).roundToInt() * step + min
+                values.setFloat(id, snapped.coerceIn(min, max))
+            },
+            valueRange = min..max,
+            steps = ((max - min) / step).toInt() - 1
         )
     }
 }

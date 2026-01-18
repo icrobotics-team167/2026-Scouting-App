@@ -1,7 +1,12 @@
 package com.example.a2026scoutingapp.ui
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
+import com.example.a2026scoutingapp.data.ExportUtils
 import com.example.a2026scoutingapp.data.MatchStorage
 import com.example.a2026scoutingapp.ui.dynamicform.DynamicFormScreen
 import com.example.a2026scoutingapp.ui.dynamicform.LayoutLoader
@@ -9,11 +14,6 @@ import com.example.a2026scoutingapp.ui.saved.SavedMatchesScreen
 import com.example.a2026scoutingapp.ui.start.Alliance
 import com.example.a2026scoutingapp.ui.start.StartPayload
 import com.example.a2026scoutingapp.ui.start.StartScreen
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
-import com.example.a2026scoutingapp.data.ExportUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -22,10 +22,32 @@ private enum class Page { START, MATCH, SAVED }
 
 @Composable
 fun AppRoot() {
-    var lastAlliance by remember { mutableStateOf(com.example.a2026scoutingapp.ui.start.Alliance.RED) }
-    var lastPosition by remember { mutableStateOf(1) }
-    var page by remember { mutableStateOf(Page.START) }
-    var startPayload by remember { mutableStateOf<StartPayload?>(null) }
+    // Persist these across rotation
+    var lastAllianceName by rememberSaveable { mutableStateOf(Alliance.RED.name) }
+    var lastPosition by rememberSaveable { mutableStateOf(1) }
+
+    // Save current page as String name (safe)
+    var pageName by rememberSaveable { mutableStateOf(Page.START.name) }
+    val page: Page = remember(pageName) { Page.valueOf(pageName) }
+    fun setPage(p: Page) { pageName = p.name }
+
+    // Save StartPayload as primitives (safe)
+    var hasStart by rememberSaveable { mutableStateOf(false) }
+    var savedScoutName by rememberSaveable { mutableStateOf("") }
+    var savedAllianceName by rememberSaveable { mutableStateOf(Alliance.RED.name) }
+    var savedPosition by rememberSaveable { mutableStateOf(1) }
+    var savedMatchType by rememberSaveable { mutableStateOf("qualification") }
+    var savedMatchNumber by rememberSaveable { mutableStateOf(1) }
+    var savedTeamNumber by rememberSaveable { mutableStateOf(1) }
+
+    val startPayload: StartPayload? = if (!hasStart) null else StartPayload(
+        alliance = Alliance.valueOf(savedAllianceName),
+        position = savedPosition,
+        scoutName = savedScoutName,
+        matchType = savedMatchType,
+        matchNumber = savedMatchNumber,
+        teamNumber = savedTeamNumber
+    )
 
     val context = LocalContext.current
 
@@ -36,6 +58,7 @@ fun AppRoot() {
             ExportUtils.exportAllAsZip(context, uri)
         }
     }
+
     var savedFiles by remember { mutableStateOf(MatchStorage.list(context)) }
 
     fun refreshSaved() {
@@ -44,24 +67,33 @@ fun AppRoot() {
 
     when (page) {
         Page.START -> StartScreen(
-            initialAlliance = lastAlliance,
+            initialAlliance = Alliance.valueOf(lastAllianceName),
             initialPosition = lastPosition,
-            onAllianceChange = { lastAlliance = it },
-            onPositionChange = { lastPosition = it },
-            onStart = {
-                startPayload = it
-                page = Page.MATCH
+            onAllianceChange = { a -> lastAllianceName = a.name },
+            onPositionChange = { p -> lastPosition = p },
+            onStart = { payload ->
+                hasStart = true
+                savedScoutName = payload.scoutName
+                savedAllianceName = payload.alliance.name
+                savedPosition = payload.position
+                savedMatchType = payload.matchType
+                savedMatchNumber = payload.matchNumber
+                savedTeamNumber = payload.teamNumber
+
+                setPage(Page.MATCH)
             },
             onViewSaved = {
                 refreshSaved()
-                page = Page.SAVED
+                setPage(Page.SAVED)
             }
         )
 
         Page.MATCH -> {
             val start = requireNotNull(startPayload)
-            val layoutJson =
+
+            val layoutJson = remember {
                 LayoutLoader.loadJsonObjectFromAssets(context, "match_layout.json")
+            }
 
             val header = headerLine(start)
 
@@ -74,11 +106,11 @@ fun AppRoot() {
                 matchType = start.matchType,
                 matchNumber = start.matchNumber,
                 teamNumber = start.teamNumber,
-                onBack = { page = Page.START },
+                onBack = { setPage(Page.START) },
                 onSave = { json ->
                     MatchStorage.save(context, header, json)
                     refreshSaved()
-                    page = Page.SAVED
+                    setPage(Page.SAVED)
                 }
             )
         }
@@ -86,13 +118,9 @@ fun AppRoot() {
         Page.SAVED -> SavedMatchesScreen(
             files = savedFiles,
             onRefresh = { refreshSaved() },
-            onBack = { page = Page.START },
+            onBack = { setPage(Page.START) },
             onExport = {
-                val timestamp = SimpleDateFormat(
-                    "yyyy-MM-dd_HHmm",
-                    Locale.US
-                ).format(Date())
-
+                val timestamp = SimpleDateFormat("yyyy-MM-dd_HHmm", Locale.US).format(Date())
                 exportLauncher.launch("scouting_export_$timestamp.zip")
             }
         )

@@ -21,8 +21,7 @@ fun SavedMatchesScreen(
     onRefresh: () -> Unit,
     onBack: () -> Unit,
     onExport: () -> Unit
-)
- {
+) {
     var page by remember { mutableStateOf(SavedPage.LIST) }
     var selected by remember { mutableStateOf<File?>(null) }
     var jsonText by remember { mutableStateOf("") }
@@ -31,40 +30,14 @@ fun SavedMatchesScreen(
     var confirmDeleteOne by remember { mutableStateOf<File?>(null) }
 
     Column(Modifier.fillMaxSize()) {
-        Surface(tonalElevation = 2.dp) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "← Back",
-                    modifier = Modifier
-                        .clickable { onBack() }
-                        .padding(8.dp),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
-                Spacer(Modifier.width(10.dp))
-
-                Text(
-                    text = "Saved Matches",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.weight(1f)
-                )
-
-                TextButton(onClick = onExport) {
-                    Text("Export")
-                }
-
-                TextButton(onClick = onRefresh) { Text("Refresh") }
-
-                if (page == SavedPage.LIST && files.isNotEmpty()) {
-                    TextButton(onClick = { confirmDeleteAll = true }) { Text("Delete All") }
-                }
-            }
-        }
+        SavedHeaderBar(
+            page = page,
+            hasFiles = files.isNotEmpty(),
+            onBack = onBack,
+            onExport = onExport,
+            onRefresh = onRefresh,
+            onDeleteAll = { confirmDeleteAll = true }
+        )
 
         if (confirmDeleteAll) {
             AlertDialog(
@@ -161,6 +134,53 @@ fun SavedMatchesScreen(
 }
 
 @Composable
+private fun SavedHeaderBar(
+    page: SavedPage,
+    hasFiles: Boolean,
+    onBack: () -> Unit,
+    onExport: () -> Unit,
+    onRefresh: () -> Unit,
+    onDeleteAll: () -> Unit
+) {
+    Surface(
+        tonalElevation = 2.dp,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = 5.dp)
+                .padding(horizontal = 12.dp, vertical = 1.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "← Back",
+                modifier = Modifier
+                    .clickable { onBack() }
+                    .padding(8.dp),
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Spacer(Modifier.width(10.dp))
+
+            Text(
+                text = "Saved Matches",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.weight(1f)
+            )
+
+            TextButton(onClick = onExport) { Text("Export All") }
+            TextButton(onClick = onRefresh) { Text("Refresh") }
+
+            if (page == SavedPage.LIST && hasFiles) {
+                TextButton(onClick = onDeleteAll) { Text("Delete All") }
+            }
+        }
+    }
+}
+
+@Composable
 private fun SavedFileCard(
     file: File,
     onOpen: () -> Unit,
@@ -198,9 +218,7 @@ private fun SavedFileCard(
 
             Spacer(Modifier.width(12.dp))
 
-            TextButton(onClick = onDelete) {
-                Text("Delete")
-            }
+            TextButton(onClick = onDelete) { Text("Delete") }
         }
     }
 }
