@@ -74,7 +74,11 @@
               "min": 0,
               "max": 999,
               "default": 0
-            },
+            }
+          ]
+        },
+        {
+          "widgets": [
             {
               "type": "dropdown",
               "id": "tele_climbed",
