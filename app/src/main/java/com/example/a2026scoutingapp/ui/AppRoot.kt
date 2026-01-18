@@ -55,7 +55,7 @@ fun AppRoot() {
         contract = ActivityResultContracts.CreateDocument("application/zip")
     ) { uri: Uri? ->
         if (uri != null) {
-            ExportUtils.exportAllAsZip(context, uri)
+            ExportUtils.exportToUsb(context, uri)
         }
     }
 
@@ -119,10 +119,6 @@ fun AppRoot() {
             files = savedFiles,
             onRefresh = { refreshSaved() },
             onBack = { setPage(Page.START) },
-            onExport = {
-                val timestamp = SimpleDateFormat("yyyy-MM-dd_HHmm", Locale.US).format(Date())
-                exportLauncher.launch("scouting_export_$timestamp.zip")
-            }
         )
     }
 }

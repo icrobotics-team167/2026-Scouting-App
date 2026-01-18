@@ -1,5 +1,7 @@
 package com.example.a2026scoutingapp.ui.saved
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,9 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.a2026scoutingapp.data.ExportUtils
 import com.example.a2026scoutingapp.data.MatchStorage
 import java.io.File
 
@@ -19,9 +23,16 @@ private enum class SavedPage { LIST, DETAIL }
 fun SavedMatchesScreen(
     files: List<File>,
     onRefresh: () -> Unit,
-    onBack: () -> Unit,
-    onExport: () -> Unit
+    onBack: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        if (uri != null) ExportUtils.exportToUsb(context, uri)
+    }
+
     var page by remember { mutableStateOf(SavedPage.LIST) }
     var selected by remember { mutableStateOf<File?>(null) }
     var jsonText by remember { mutableStateOf("") }
@@ -34,7 +45,7 @@ fun SavedMatchesScreen(
             page = page,
             hasFiles = files.isNotEmpty(),
             onBack = onBack,
-            onExport = onExport,
+            onExport = { exportLauncher.launch("scouting_data.json") },
             onRefresh = onRefresh,
             onDeleteAll = { confirmDeleteAll = true }
         )
