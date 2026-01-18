@@ -94,6 +94,9 @@ fun DynamicFormScreen(
                     Text("Save Match")
                 }
             }
+            item {
+                Spacer(modifier = Modifier.height(75.dp))
+            }
         }
     }
 }
