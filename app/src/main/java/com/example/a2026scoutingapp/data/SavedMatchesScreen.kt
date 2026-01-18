@@ -1,4 +1,4 @@
-package com.example.a2026scoutingapp.ui.saved
+package com.example.a2026scoutingapp.data
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
