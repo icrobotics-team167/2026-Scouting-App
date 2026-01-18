@@ -19,6 +19,7 @@
               "type": "counter",
               "id": "auto_cycles",
               "label": "Cycles",
+              "hint": "How many times the robot filled and emptied their hopper",
               "min": 0,
               "max": 999,
               "default": 0
@@ -42,6 +43,20 @@
               "default": false
             }
           ]
+        },
+        {
+          "widgets": [
+            {
+              "type": "slider",
+              "id": "auto_accuracy",
+              "label": "Cycle Accuracy",
+              "hint": "Estimated scoring accuracy during auto (0–100%).",
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "default": 50
+            }
+          ]
         }
       ]
     },
@@ -55,6 +70,7 @@
               "type": "counter",
               "id": "tele_cycles",
               "label": "Cycles",
+              "hint": "How many times the robot filled and emptied their hopper",
               "min": 0,
               "max": 999,
               "default": 0
@@ -64,8 +80,35 @@
               "id": "tele_climbed",
               "label": "Climbed",
               "hint": "Choose the highest level achieved.",
-              "options": ["None", "L1", "L2", "L3"],
+              "options": [
+                "None",
+                "L1",
+                "L2",
+                "L3"
+              ],
               "default": "None"
+            },
+            {
+              "type": "dropdown",
+              "id": "tele_climb_location",
+              "label": "Climb Location",
+              "hint": "Where did the robot climb in teleop?",
+              "options": ["None", "Left", "Center", "Right"],
+              "default": "None"
+            }
+          ]
+        },
+        {
+          "widgets": [
+            {
+              "type": "slider",
+              "id": "tele_accuracy",
+              "label": "Cycle Accuracy",
+              "hint": "Estimated scoring accuracy during teleop (0–100%).",
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "default": 50
             }
           ]
         }

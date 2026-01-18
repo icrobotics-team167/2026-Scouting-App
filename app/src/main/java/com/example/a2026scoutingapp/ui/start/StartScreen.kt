@@ -100,7 +100,6 @@ fun StartScreen(
     }
     val errors = remember(state) { validate(state) }
     val canStart = !errors.hasAny
-
     Column(modifier.fillMaxSize()) {
         StartHeaderBar()
 
@@ -245,17 +244,20 @@ fun StartScreen(
 @Composable
 private fun StartHeaderBar() {
     Surface(tonalElevation = 2.dp) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
+            Spacer(modifier = Modifier.height(25.dp))
+
             Text(
                 text = "Match Start",
                 style = MaterialTheme.typography.titleLarge
             )
-            Spacer(Modifier.width(12.dp))
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = "Enter details before you begin scouting.",
                 style = MaterialTheme.typography.bodySmall,
