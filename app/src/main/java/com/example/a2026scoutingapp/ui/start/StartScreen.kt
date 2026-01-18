@@ -31,7 +31,7 @@ data class StartFormState(
     val alliance: Alliance = Alliance.RED,
     val position: Int = 1,
     val scoutName: String = "",
-    val matchType: String = "qualification",
+    val matchType: String = "Match Type",
     val matchNumberText: String = "",
     val teamNumberText: String = ""
 )
@@ -89,7 +89,6 @@ fun StartScreen(
     onStart: (StartPayload) -> Unit,
     onViewSaved: () -> Unit
 ) {
-
     var state by remember {
         mutableStateOf(
             StartFormState(
@@ -98,10 +97,12 @@ fun StartScreen(
             )
         )
     }
+
     val errors = remember(state) { validate(state) }
     val canStart = !errors.hasAny
+
     Column(modifier.fillMaxSize()) {
-        StartHeaderBar()
+        Header()
 
         LazyColumn(
             modifier = Modifier
@@ -110,82 +111,60 @@ fun StartScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Surface(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    tonalElevation = 0.dp,
-                    border = ButtonDefaults.outlinedButtonBorder
-                ) {
-                    Column(
-                        Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text("Alliance & Position", style = MaterialTheme.typography.titleMedium)
-
-                        AlliancePicker(
-                            value = state.alliance,
-                            onChange = {
-                                state = state.copy(alliance = it)
-                                onAllianceChange(it)
-                            }
-                        )
-                        PositionPicker(
-                            value = state.position,
-                            onChange = {
-                                state = state.copy(position = it)
-                                onPositionChange(it)
-                            }
-                        )
-                    }
+                CardBlock(title = "Alliance & Position") {
+                    AlliancePick(
+                        value = state.alliance,
+                        onChange = {
+                            state = state.copy(alliance = it)
+                            onAllianceChange(it)
+                        }
+                    )
+                    PosPick(
+                        value = state.position,
+                        onChange = {
+                            state = state.copy(position = it)
+                            onPositionChange(it)
+                        }
+                    )
                 }
             }
 
             item {
-                Surface(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    tonalElevation = 0.dp,
-                    border = ButtonDefaults.outlinedButtonBorder
-                ) {
-                    Column(
-                        Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text("Match Setup", style = MaterialTheme.typography.titleMedium)
+                CardBlock(title = "Match Setup") {
+                    TextFieldRow(
+                        label = "Scout Name",
+                        value = state.scoutName,
+                        onValueChange = { state = state.copy(scoutName = it) },
+                        placeholder = "Enter your name",
+                        errorText = errors.scoutName
+                    )
 
-                        LabeledTextField(
-                            label = "Scout Name",
-                            value = state.scoutName,
-                            onValueChange = { state = state.copy(scoutName = it) },
-                            placeholder = "Enter your name",
-                            errorText = errors.scoutName
+                    TypeDrop(
+                        label = "Match Type",
+                        options = MatchTypes,
+                        value = state.matchType,
+                        onChange = { state = state.copy(matchType = it) },
+                        errorText = errors.matchType
+                    )
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        NumFieldRow(
+                            modifier = Modifier.weight(1f),
+                            label = "Match Number",
+                            value = state.matchNumberText,
+                            onValueChange = { state = state.copy(matchNumberText = it.onlyDigits()) },
+                            placeholder = "e.g. 12",
+                            errorText = errors.matchNumber
                         )
 
-                        MatchTypeDropdownNonExperimental(
-                            label = "Match Type",
-                            options = MatchTypes,
-                            value = state.matchType,
-                            onChange = { state = state.copy(matchType = it) },
-                            errorText = errors.matchType
+                        NumFieldRow(
+                            modifier = Modifier.weight(1f),
+                            label = "Team Number",
+                            value = state.teamNumberText,
+                            onValueChange = { state = state.copy(teamNumberText = it.onlyDigits()) },
+                            placeholder = "e.g. 254",
+                            errorText = errors.teamNumber
                         )
-
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            NumberField(
-                                modifier = Modifier.weight(1f),
-                                label = "Match Number",
-                                value = state.matchNumberText,
-                                onValueChange = { state = state.copy(matchNumberText = it.onlyDigits()) },
-                                placeholder = "e.g. 12",
-                                errorText = errors.matchNumber
-                            )
-
-                            NumberField(
-                                modifier = Modifier.weight(1f),
-                                label = "Team Number",
-                                value = state.teamNumberText,
-                                onValueChange = { state = state.copy(teamNumberText = it.onlyDigits()) },
-                                placeholder = "e.g. 254",
-                                errorText = errors.teamNumber
-                            )
-                        }
                     }
                 }
             }
@@ -242,7 +221,7 @@ fun StartScreen(
 }
 
 @Composable
-private fun StartHeaderBar() {
+private fun Header() {
     Surface(tonalElevation = 2.dp) {
         Column(
             modifier = Modifier
@@ -250,16 +229,10 @@ private fun StartHeaderBar() {
                 .padding(horizontal = 12.dp, vertical = 12.dp)
         ) {
             Spacer(modifier = Modifier.height(25.dp))
-
-            Text(
-                text = "Match Start",
-                style = MaterialTheme.typography.titleLarge
-            )
-
+            Text("Match Start", style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(4.dp))
-
             Text(
-                text = "Enter details before you begin scouting.",
+                "Enter details before you begin scouting.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -268,7 +241,30 @@ private fun StartHeaderBar() {
 }
 
 @Composable
-fun AlliancePicker(
+private fun CardBlock(
+    title: String,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge,
+        tonalElevation = 0.dp,
+        border = ButtonDefaults.outlinedButtonBorder
+    ) {
+        Column(
+            Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            content = {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                content()
+            }
+        )
+    }
+}
+
+@Composable
+fun AlliancePick(
     value: Alliance,
     onChange: (Alliance) -> Unit,
     modifier: Modifier = Modifier
@@ -279,15 +275,14 @@ fun AlliancePicker(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            SegmentedChoiceButton(
+            SegBtn(
                 text = "Red",
                 selected = value == Alliance.RED,
                 onClick = { onChange(Alliance.RED) },
                 selectedKind = Alliance.RED,
                 modifier = Modifier.weight(1f)
             )
-
-            SegmentedChoiceButton(
+            SegBtn(
                 text = "Blue",
                 selected = value == Alliance.BLUE,
                 onClick = { onChange(Alliance.BLUE) },
@@ -299,7 +294,7 @@ fun AlliancePicker(
 }
 
 @Composable
-fun PositionPicker(
+fun PosPick(
     value: Int,
     onChange: (Int) -> Unit,
     modifier: Modifier = Modifier
@@ -311,7 +306,7 @@ fun PositionPicker(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Positions.forEach { p ->
-                SegmentedChoiceButton(
+                SegBtn(
                     text = p.toString(),
                     selected = value == p,
                     onClick = { onChange(p) },
@@ -323,7 +318,7 @@ fun PositionPicker(
 }
 
 @Composable
-fun SegmentedChoiceButton(
+fun SegBtn(
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
@@ -353,13 +348,11 @@ fun SegmentedChoiceButton(
         border = ButtonDefaults.outlinedButtonBorder.copy(
             brush = SolidColor(border)
         )
-    ) {
-        Text(text)
-    }
+    ) { Text(text) }
 }
 
 @Composable
-fun LabeledTextField(
+fun TextFieldRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
@@ -377,17 +370,13 @@ fun LabeledTextField(
             modifier = Modifier.fillMaxWidth()
         )
         if (errorText != null) {
-            Text(
-                errorText,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
+            Text(errorText, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
 @Composable
-fun NumberField(
+fun NumFieldRow(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
@@ -406,17 +395,13 @@ fun NumberField(
             modifier = Modifier.fillMaxWidth()
         )
         if (errorText != null) {
-            Text(
-                errorText,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
-            )
+            Text(errorText, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
 @Composable
-fun MatchTypeDropdownNonExperimental(
+fun TypeDrop(
     label: String,
     options: List<String>,
     value: String,
@@ -426,15 +411,32 @@ fun MatchTypeDropdownNonExperimental(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Column(modifier) {
-        Text(label, style = MaterialTheme.typography.labelLarge)
+    val isPlaceholder = value !in options
 
+    val borderColor =
+        if (isPlaceholder) MaterialTheme.colorScheme.error
+        else MaterialTheme.colorScheme.outline
+
+    val textColor =
+        if (isPlaceholder) MaterialTheme.colorScheme.error
+        else MaterialTheme.colorScheme.onSurface
+
+    Column(modifier) {
         Box {
             OutlinedButton(
                 onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                border = ButtonDefaults.outlinedButtonBorder.copy(
+                    brush = SolidColor(borderColor)
+                ),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = textColor
+                )
             ) {
-                Text(value.replaceFirstChar { it.uppercase() })
+                Text(
+                    if (isPlaceholder) "Match Type"
+                    else value.replaceFirstChar { it.uppercase() }
+                )
             }
 
             DropdownMenu(
